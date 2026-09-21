@@ -619,7 +619,7 @@ def run_probe_suite() -> dict[str, object]:
         bucket["verdict_correct"] += int(bool(row["verdict_correct"]))
         bucket["gate_correct"] += int(bool(row["gate_correct"]))
 
-    durations = [float(row["duration_ms"]) for row in rows]
+    durations = [float(str(row["duration_ms"])) for row in rows]
     false_blocks = sum(
         1 for row in rows if row["expected_gate"] == "pass" and row["actual_gate"] == "block"
     )
