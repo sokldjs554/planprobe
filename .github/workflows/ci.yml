@@ -25,6 +25,13 @@ jobs:
           node-version: "22"
       - run: npm install --no-save typescript@5.8.3
       - run: ./node_modules/.bin/tsc -p web/tsconfig.json --noEmit
+      - name: Verify generated browser bundle matches TypeScript
+        shell: bash
+        run: |
+          npm run build:web
+          git diff --exit-code -- planprobe/static/app.js
+      - name: Syntax-check deployed browser smoke
+        run: node --check scripts/smoke_browser.mjs
       - run: PYTHONPATH=. python scripts/evaluate_probe_suite.py > /tmp/probe-suite.json
       - name: Verify frozen repository-contract suite
         run: python -c 'import json; x=json.load(open("/tmp/probe-suite.json")); s=x["summary"]; assert s["cases"]==24 and s["verdict_correct"]==24 and s["gate_correct"]==24 and s["source_unchanged"]==24 and s["false_blocks"]==0 and s["missed_blocks"]==0'

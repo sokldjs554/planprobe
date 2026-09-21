@@ -22,3 +22,27 @@ jobs:
           EXPECTED_COMMIT: ${{ github.sha }}
           SMOKE_TIMEOUT_SECONDS: "600"
         run: python scripts/smoke_live.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install browser smoke dependency
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify deployed browser flow
+        env:
+          BASE_URL: https://planprobe.onrender.com
+          EXPECTED_COMMIT: ${{ github.sha }}
+          BROWSER_SMOKE_TIMEOUT_MS: "180000"
+        run: node scripts/smoke_browser.mjs
+      - name: Upload live browser evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-browser-evidence-${{ github.sha }}
+          path: |
+            artifacts/live-browser-summary.json
+            artifacts/live-desktop-before.png
+            artifacts/live-desktop-complete.png
+            artifacts/live-mobile.png
+          if-no-files-found: warn

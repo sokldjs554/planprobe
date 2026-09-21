@@ -4,13 +4,12 @@ from planprobe.models import GateDecision, ImplementationPlan, ProbeResult
 
 
 def decide_gate(plan: ImplementationPlan, results: list[ProbeResult]) -> GateDecision:
-    by_assumption = {result.assumption_id: result for result in results}
     blocked: list[str] = []
     for assumption in plan.assumptions:
         if not assumption.load_bearing:
             continue
-        result = by_assumption.get(assumption.id)
-        if result is None or result.verdict in {"contradicted", "unknown"}:
+        matches = [result for result in results if result.assumption_id == assumption.id]
+        if not matches or any(result.verdict != "verified" for result in matches):
             blocked.append(assumption.id)
     if blocked:
         return GateDecision(

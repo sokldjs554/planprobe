@@ -164,13 +164,12 @@ class PlanProbePipeline:
 
     @staticmethod
     def _unknown_load_bearing(plan: ImplementationPlan, results: list[ProbeResult]) -> list[str]:
-        by_assumption = {item.assumption_id: item for item in results}
         blocked: list[str] = []
         for assumption in plan.assumptions:
             if not assumption.load_bearing:
                 continue
-            result = by_assumption.get(assumption.id)
-            if result is None or result.verdict == "unknown":
+            matches = [result for result in results if result.assumption_id == assumption.id]
+            if not matches or any(result.verdict == "unknown" for result in matches):
                 blocked.append(assumption.id)
         return blocked
 

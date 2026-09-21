@@ -26,6 +26,13 @@ def run_preflight(
     probes = provider.compile_probes(plan, root)
     results = [run_probe_fail_closed(root, probe) for probe in probes]
     gate = decide_gate(plan, results)
+    unknown_or_missing = 0
+    for assumption in plan.assumptions:
+        if not assumption.load_bearing:
+            continue
+        matches = [result for result in results if result.assumption_id == assumption.id]
+        if not matches or any(result.verdict == "unknown" for result in matches):
+            unknown_or_missing += 1
 
     return PreflightPacket(
         request_text=request_text,
@@ -39,7 +46,7 @@ def run_preflight(
             "assumptions": len(plan.assumptions),
             "verified": sum(result.verdict == "verified" for result in results),
             "contradicted": sum(result.verdict == "contradicted" for result in results),
-            "unknown": sum(result.verdict == "unknown" for result in results),
+            "unknown": unknown_or_missing,
             "source_edits": gate.source_edits_before_gate,
             "preflight_ms": int((time.perf_counter() - started) * 1000),
             **provider.metrics(),

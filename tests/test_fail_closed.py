@@ -100,3 +100,53 @@ def test_replan_must_carry_contradiction_evidence_and_no_new_load_bearing_premis
 
     safe = _plan(evidence_ids=["EV1"])
     assert pipeline._validate_replan(initial, safe, [result]) is None
+
+
+def test_duplicate_probe_results_cannot_override_fail_closed_gate(tmp_path: Path) -> None:
+    from planprobe.engine.gate import decide_gate
+
+    assumption = Assumption(
+        id="A1",
+        claim="fact",
+        why_it_matters="load bearing",
+        plan_step_ids=["P1"],
+    )
+    plan = _plan(assumptions=[assumption])
+    unknown = ProbeResult(
+        probe_id="PR-UNKNOWN",
+        assumption_id="A1",
+        verdict="unknown",
+        observed="no evidence",
+        expected="fact",
+        evidence=[],
+        duration_ms=0.1,
+    )
+    verified = ProbeResult(
+        probe_id="PR-VERIFIED",
+        assumption_id="A1",
+        verdict="verified",
+        observed="verified",
+        expected="fact",
+        evidence=[EvidenceRef(id="EV1", path="app.py", line_start=1, line_end=1, snippet="x = 1")],
+        duration_ms=0.1,
+    )
+
+    gate = decide_gate(plan, [unknown, verified])
+    pipeline = PlanProbePipeline(tmp_path, RunStore(tmp_path / "dupe-runs.db"))
+
+    assert gate.status == "block"
+    assert gate.blocked_assumptions == ["A1"]
+    assert pipeline._unknown_load_bearing(plan, [unknown, verified]) == ["A1"]
+
+
+def test_missing_load_bearing_probe_is_unknown_and_blocked(tmp_path: Path) -> None:
+    assumption = Assumption(
+        id="A1",
+        claim="fact",
+        why_it_matters="load bearing",
+        plan_step_ids=["P1"],
+    )
+    plan = _plan(assumptions=[assumption])
+    pipeline = PlanProbePipeline(tmp_path, RunStore(tmp_path / "missing-runs.db"))
+
+    assert pipeline._unknown_load_bearing(plan, []) == ["A1"]

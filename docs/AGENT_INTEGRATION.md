@@ -41,4 +41,4 @@ planprobe preflight --workspace . --provider anthropic --request "..."
 
 ## Safety boundary
 
-The model may propose a plan and allowlisted probe definitions, but it cannot mark its own premise as verified. Probe execution and gate policy remain deterministic, and preflight returns `source_edits=0`.
+The model may propose a plan and allowlisted probe definitions, but it cannot mark its own premise as verified. Probe execution and gate policy remain deterministic, and preflight returns `source_edits=0`. Probe candidates are validated per kind before execution; semantically invalid candidates are discarded, and a load-bearing premise without executable evidence remains blocked.
