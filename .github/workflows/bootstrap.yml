@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
           cp .github/workflows/bootstrap.yml /tmp/bootstrap.yml
-          cat .bootstrap/payload.part* > /tmp/planprobe.b64
+          cat .bootstrap/chunk* > /tmp/planprobe.b64
           test "$(wc -c < /tmp/planprobe.b64)" -eq 49884
           base64 -d /tmp/planprobe.b64 > /tmp/planprobe.tar.xz
           xz -t /tmp/planprobe.tar.xz
