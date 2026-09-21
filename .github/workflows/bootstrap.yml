@@ -1,0 +1,38 @@
+name: bootstrap-planprobe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".bootstrap/**"
+      - ".github/workflows/bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand staged PlanProbe source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .github/workflows/bootstrap.yml /tmp/bootstrap.yml
+          cat .bootstrap/payload.part* > /tmp/planprobe.b64
+          test "$(wc -c < /tmp/planprobe.b64)" -eq 49884
+          base64 -d /tmp/planprobe.b64 > /tmp/planprobe.tar.xz
+          xz -t /tmp/planprobe.tar.xz
+          rm -rf /tmp/planprobe-src
+          mkdir -p /tmp/planprobe-src
+          tar -xJf /tmp/planprobe.tar.xz -C /tmp/planprobe-src
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/planprobe-src/. .
+          mkdir -p .github/workflows
+          cp /tmp/bootstrap.yml .github/workflows/bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: build PlanProbe repository verification system"
+          git push
