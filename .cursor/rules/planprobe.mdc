@@ -1,0 +1,9 @@
+---
+description: PlanProbe verification invariants
+alwaysApply: true
+---
+- Models propose plans, assumptions, probes, replans, and patches; deterministic executors decide evidence and verdicts.
+- Do not turn the product into a chatbot.
+- Do not permit arbitrary shell commands from model output.
+- Do not patch tests, gate policy, or probe executors to obtain a passing result.
+- Preserve evidence links from assumption -> probe -> repository source -> verdict -> revised plan.

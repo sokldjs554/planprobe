@@ -1,0 +1,71 @@
+{
+  "runs": [
+    {
+      "run_id": "c783df5bb2fe",
+      "verdict": "ready_with_evidence",
+      "blocked": [
+        "A-UTC",
+        "A-REGION"
+      ],
+      "contradicted": 2,
+      "source_edits_before_gate": 0,
+      "checks": "2/2",
+      "pipeline_ms": 4537
+    },
+    {
+      "run_id": "23f8fbae7cbd",
+      "verdict": "ready_with_evidence",
+      "blocked": [
+        "A-UTC",
+        "A-REGION"
+      ],
+      "contradicted": 2,
+      "source_edits_before_gate": 0,
+      "checks": "2/2",
+      "pipeline_ms": 4384
+    },
+    {
+      "run_id": "dc32f273e107",
+      "verdict": "ready_with_evidence",
+      "blocked": [
+        "A-UTC",
+        "A-REGION"
+      ],
+      "contradicted": 2,
+      "source_edits_before_gate": 0,
+      "checks": "2/2",
+      "pipeline_ms": 4465
+    },
+    {
+      "run_id": "4ed68306e589",
+      "verdict": "ready_with_evidence",
+      "blocked": [
+        "A-UTC",
+        "A-REGION"
+      ],
+      "contradicted": 2,
+      "source_edits_before_gate": 0,
+      "checks": "2/2",
+      "pipeline_ms": 4569
+    },
+    {
+      "run_id": "f7ccac06f83e",
+      "verdict": "ready_with_evidence",
+      "blocked": [
+        "A-UTC",
+        "A-REGION"
+      ],
+      "contradicted": 2,
+      "source_edits_before_gate": 0,
+      "checks": "2/2",
+      "pipeline_ms": 4490
+    }
+  ],
+  "summary": {
+    "runs": 5,
+    "ready": 5,
+    "median_pipeline_ms": 4490.0,
+    "all_precode_edits_zero": true
+  },
+  "scope": "deterministic orchestration repeatability only; not an LLM quality benchmark"
+}

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: planprobe
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: uvicorn planprobe.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PLANPROBE_STATE_DIR
+        value: /tmp/planprobe

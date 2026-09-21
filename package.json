@@ -1,0 +1,8 @@
+{
+  "name": "planprobe-ui",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc -p web/tsconfig.json --noEmit",
+    "build:web": "tsc -p web/tsconfig.json"
+  }
+}
