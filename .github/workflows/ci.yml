@@ -28,6 +28,15 @@ jobs:
       - run: PYTHONPATH=. python scripts/evaluate_probe_suite.py > /tmp/probe-suite.json
       - name: Verify frozen repository-contract suite
         run: python -c 'import json; x=json.load(open("/tmp/probe-suite.json")); s=x["summary"]; assert s["cases"]==24 and s["verdict_correct"]==24 and s["gate_correct"]==24 and s["source_unchanged"]==24 and s["false_blocks"]==0 and s["missed_blocks"]==0'
+      - name: Verify vendor-neutral preflight CLI contract
+        shell: bash
+        run: |
+          set +e
+          python -m planprobe.cli preflight --workspace . --provider deterministic-demo --output /tmp/preflight.json
+          code=$?
+          set -e
+          test "$code" -eq 2
+          python -c 'import json; p=json.load(open("/tmp/preflight.json")); assert p["gate"]["status"]=="block" and p["gate"]["source_edits_before_gate"]==0 and set(p["gate"]["blocked_assumptions"])=={"A-UTC","A-REGION"}'
       - run: python -m planprobe.cli demo > /tmp/planprobe.json
       - name: Verify pre-code block and final pass
         run: python -c 'import json; p=json.load(open("/tmp/planprobe.json")); assert p["first_gate"]["status"]=="block" and p["first_gate"]["source_edits_before_gate"]==0 and p["verdict"]=="ready_with_evidence"'
