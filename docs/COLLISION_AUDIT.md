@@ -60,3 +60,18 @@ The retained boundary therefore remains deliberately narrow:
 > a coding plan's repository-specific premise must compile into an allowlisted executable probe; a deterministic tri-state result controls a hard source-write interlock; contradicted/unknown load-bearing premises force evidence-bound replanning before patch generation.
 
 If a public project with this same end-to-end boundary is found later, the topic must be re-audited before portfolio submission.
+
+
+## Gate 4 re-audit after coding-agent preflight
+
+The project was searched again using combinations of:
+
+- `coding agent preflight gate repository assumptions`;
+- `AI coding preflight repository assumptions`;
+- `coding agent executable assumption probe`;
+- `pre-code repository verification agent CLI`;
+- `coding agent source write interlock`.
+
+No directly matching GitHub repository appeared in those searches. The integration layer therefore remains vendor-neutral rather than becoming a Claude/Cursor/Codex-specific prompt skill. This is still not a global novelty claim.
+
+The retained distinction is that a coding client may request a preflight, but only allowlisted repository probes can produce the evidence-backed tri-state verdict that controls source-write permission.
