@@ -32,7 +32,7 @@ Remote/local model adapters receive a bounded source pack rather than a local fi
 
 When the provider API returns usage data, PlanProbe records model route, model id, call count, input/output tokens, and accumulated model latency in the run packet. `scripts/run_model_smoke.py` writes an auditable smoke artifact without storing API keys.
 
-A real GitHub Actions smoke exercises the OpenAI-compatible route against Ollama 0.34.2 with Qwen2.5-Coder 1.5B. The captured run recorded 2 model calls, 3,486 input tokens, 1,208 output tokens, about 120.2 s accumulated model latency, zero schema retries/fallbacks, and a fail-closed block with zero source edits. These remain plumbing/integration measurements, not a model-quality benchmark.
+The real GitHub Actions smoke exercises the OpenAI-compatible route against Ollama with Qwen2.5-Coder 1.5B. Run-specific call counts, tokens, latency, schema retries/fallbacks, and rejected probe candidates are kept in the workflow packet/artifact rather than frozen into this document. The smoke requires zero source edits, no probe-runtime failure, and at least one decisive repository probe with evidence. Invalid model-proposed probe candidates are rejected before execution; missing load-bearing evidence remains fail-closed. These remain integration/verification-boundary measurements, not a model-quality benchmark.
 
 
 ## Coding-agent client boundary
@@ -42,4 +42,4 @@ A real GitHub Actions smoke exercises the OpenAI-compatible route against Ollama
 
 ## Real open-model smoke
 
-The `open-model-smoke` workflow installs Ollama, pulls `qwen2.5-coder:1.5b`, warms the model, runs `planprobe preflight`, validates the machine-readable packet, and uploads the packet plus exact model inventory as workflow artifacts. The workflow fails if the real model route cannot produce a schema-valid preflight packet or if preflight modifies source.
+The `open-model-smoke` workflow installs Ollama, pulls `qwen2.5-coder:1.5b`, warms the model, runs `planprobe preflight`, validates the machine-readable packet, and uploads the packet plus exact model inventory as workflow artifacts. It fails when there is no decisive executable repository probe with evidence, when a probe reaches runtime in an invalid form, when the model route cannot produce the packet, or when preflight modifies source.
