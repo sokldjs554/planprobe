@@ -32,9 +32,14 @@ Remote/local model adapters receive a bounded source pack rather than a local fi
 
 When the provider API returns usage data, PlanProbe records model route, model id, call count, input/output tokens, and accumulated model latency in the run packet. `scripts/run_model_smoke.py` writes an auditable smoke artifact without storing API keys.
 
-These metrics are plumbing evidence only until a frozen comparative model run is executed.
+A real GitHub Actions smoke now exercises the route with Ollama 0.34.2 and Qwen2.5-Coder 1.5B. The captured run recorded 2 model calls, 3,486 input tokens, 1,208 output tokens, about 120.2 s accumulated model latency, zero schema retries/fallbacks, and a fail-closed block with zero source edits. These remain plumbing/integration measurements, not a model-quality benchmark.
 
 
 ## Coding-agent client boundary
 
 `planprobe preflight` is the vendor-neutral integration point. Claude Code, Cursor, Codex, or another coding agent may invoke the same CLI contract before source editing. This repository claims the implemented CLI boundary, not vendor-specific benchmark results.
+
+
+## Real open-model smoke
+
+The `open-model-smoke` workflow installs Ollama, pulls `qwen2.5-coder:1.5b`, warms the model, runs `planprobe preflight`, validates the machine-readable packet, and uploads the packet plus exact model inventory as workflow artifacts. The workflow fails if the real model route cannot produce a schema-valid preflight packet or if preflight modifies source.

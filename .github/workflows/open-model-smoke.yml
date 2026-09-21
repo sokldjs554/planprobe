@@ -9,6 +9,9 @@ on:
       - "planprobe/agent/context.py"
       - "planprobe/preflight.py"
       - "planprobe/models.py"
+      - "README.md"
+      - "docs/JD_TRACEABILITY.md"
+      - "docs/MODEL_ROUTING.md"
   workflow_dispatch:
 
 concurrency:

@@ -7,7 +7,7 @@ Target checked again on 2026-09-21 against the currently open posting (`rec_idx=
 | LLM-based development/work productivity service | prevents wasted coding loops caused by false repository premises | core product |
 | Full-stack web application | FastAPI API + Korean product console | implemented |
 | LLM API integration | hosted Messages adapter | implemented; real run not yet claimed |
-| Open-source model integration | OpenAI-compatible Ollama/vLLM/Qwen route | implemented; benchmark pending |
+| Open-source model integration | OpenAI-compatible route + actual Ollama/Qwen2.5-Coder 1.5B smoke artifact | implemented and smoke-verified |
 | Fast prototyping | one request drives plan → probes → replan → patch → tests | implemented |
 | AI agent / automation pipeline | multi-stage bounded agent workflow | implemented |
 | Code generation | verified plan emits exact source patch | implemented |
@@ -18,7 +18,7 @@ Target checked again on 2026-09-21 against the currently open posting (`rec_idx=
 
 ## Current gap list
 
-- Real local/open-source model run has not been measured.
+- Real local/open-source **smoke integration has been measured**; model-quality comparison is still pending.
 - Hosted model run has not been measured.
 - Comparative evaluation vs direct coding / self-reflect is designed but not yet executed.
 
@@ -75,3 +75,21 @@ Still unclaimed:
 - vendor-specific benchmark quality;
 - real Qwen/hosted model comparative results;
 - superiority over direct coding/self-reflect baselines.
+
+
+## Gate 5 — real open-model smoke (2026-09-21)
+
+A real credential-free open-model route was executed in GitHub Actions using **Ollama 0.34.2 + Qwen2.5-Coder 1.5B** through the OpenAI-compatible adapter.
+
+Observed smoke evidence:
+- workflow: `open-model-smoke`;
+- real model calls: **2**;
+- input tokens: **3,486**;
+- output tokens: **1,208**;
+- accumulated model latency: **120,201 ms**;
+- schema validation retries: **0**;
+- JSON-schema compatibility fallbacks: **0**;
+- source modifications during preflight: **0**;
+- final gate: **block** (fail-closed rather than inventing proof for unsupported model-proposed premises).
+
+The workflow stores the JSON preflight packet and exact Ollama/model inventory as a GitHub Actions artifact. This closes the "open-source model route exists only on paper" gap. It does **not** establish model-quality superiority, and hosted-model / Direct-vs-Self-reflect comparisons remain deliberately unclaimed.
