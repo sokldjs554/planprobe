@@ -79,17 +79,15 @@ Still unclaimed:
 
 ## Gate 5 — real open-model smoke (2026-09-21)
 
-A real credential-free open-model route was executed in GitHub Actions using **Ollama 0.34.2 + Qwen2.5-Coder 1.5B** through the OpenAI-compatible adapter.
+The open-model verification path runs **Ollama + Qwen2.5-Coder 1.5B** in GitHub Actions through the OpenAI-compatible adapter.
 
-Observed smoke evidence:
-- workflow: `open-model-smoke`;
-- real model calls: **2**;
-- input tokens: **3,486**;
-- output tokens: **1,208**;
-- accumulated model latency: **120,201 ms**;
-- schema validation retries: **0**;
-- JSON-schema compatibility fallbacks: **0**;
-- source modifications during preflight: **0**;
-- final gate: **block** (fail-closed rather than inventing proof for unsupported model-proposed premises).
+Current acceptance contract:
+- the runner installs Ollama, pulls the exact model tag, records model inventory, and warms the model;
+- `planprobe preflight` must leave source modifications at **0**;
+- model-proposed probe candidates are semantically validated before execution;
+- invalid candidates are rejected rather than executed, and missing load-bearing evidence remains fail-closed;
+- at least one real repository probe must reach a decisive `verified` or `contradicted` verdict with repository evidence;
+- probe-runtime failures make the smoke fail;
+- the preflight packet and exact model inventory are retained as Actions artifacts.
 
-The workflow stores the JSON preflight packet and exact Ollama/model inventory as a GitHub Actions artifact. This closes the "open-source model route exists only on paper" gap. It does **not** establish model-quality superiority, and hosted-model / Direct-vs-Self-reflect comparisons remain deliberately unclaimed.
+Run-specific token/latency/rejection counts are evidence attached to the workflow run, not fixed portfolio performance claims. This closes the "open-source model route exists only on paper" gap only when the current smoke is green. It does **not** establish model-quality superiority, and hosted-model / Direct-vs-Self-reflect comparisons remain deliberately unclaimed.
