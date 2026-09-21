@@ -121,7 +121,8 @@ jobs:
               "output_tokens": p["metrics"]["llm_output_tokens"],
               "latency_ms": p["metrics"]["llm_latency_ms"],
               "validation_retries": p["metrics"]["llm_validation_retries"],
-              "schema_fallbacks": p["metrics"]["llm_schema_fallbacks"],\n              "rejected_probes": p["metrics"]["llm_rejected_probes"],
+              "schema_fallbacks": p["metrics"]["llm_schema_fallbacks"],
+              "rejected_probes": p["metrics"]["llm_rejected_probes"],
               "model": p["metrics"]["llm_model"],
           }, ensure_ascii=False))
           PY
