@@ -36,6 +36,9 @@ const runButton = $("run-demo") as HTMLButtonElement;
 const requestText = $("request-text") as HTMLTextAreaElement;
 const stagePill = $("stage-pill");
 const statusLine = $("status-line");
+const resultOverview = $("result-overview");
+const resultHeadline = $("result-headline");
+const resultDetail = $("result-detail");
 const metricAssumptions = $("metric-assumptions");
 const metricFalse = $("metric-false");
 const metricPreedit = $("metric-preedit");
@@ -48,6 +51,23 @@ const eventsNode = $("events");
 const replanNode = $("replan");
 const diffNode = $("diff");
 const checksNode = $("checks");
+
+const STAGE_LABELS: Record<string, string> = {
+  queued: "대기",
+  planning: "AI 계획 생성",
+  extracting: "핵심 전제 추출",
+  probing: "저장소 검증",
+  blocked: "코드 생성 차단",
+  replanning: "근거 기반 재계획",
+  coding: "코드 생성",
+  verifying: "최종 검증",
+  complete: "완료",
+  failed: "실패",
+};
+
+function stageLabel(stage: string): string {
+  return STAGE_LABELS[stage] ?? stage.replaceAll("_", " ");
+}
 
 function esc(value: unknown): string {
   return String(value ?? "")
@@ -77,8 +97,27 @@ function renderPlan(target: HTMLElement, plan: Plan): void {
 
 function renderEvents(events: EventRow[]): void {
   eventsNode.innerHTML = events.map(item =>
-    `<div class="event"><b>${esc(item.stage)}</b><span>${esc(item.message)}</span></div>`
+    `<div class="event"><b>${esc(stageLabel(item.stage))}</b><span>${esc(item.message)}</span></div>`
   ).join("");
+}
+
+function renderResultSummary(packet: Packet): void {
+  const falseCount = Number(packet.metrics.contradicted_assumptions ?? 0);
+  const preEdits = Number(packet.metrics.source_edits_before_gate ?? 0);
+  const checksPassed = Number(packet.metrics.checks_passed ?? 0);
+  const checksTotal = Number(packet.metrics.checks_total ?? 0);
+
+  if (packet.verdict === "ready_with_evidence") {
+    resultOverview.className = "result-overview success";
+    resultOverview.querySelector(".result-icon")!.textContent = "✓";
+    resultHeadline.textContent = `코드 작성 전에 잘못된 전제 ${falseCount}개를 차단하고, 재계획 후 ${checksPassed}/${checksTotal} 검증을 통과했습니다.`;
+    resultDetail.textContent = `첫 Gate 이전 소스 수정 ${preEdits}개 · AI의 자기평가가 아니라 실제 저장소 probe와 테스트로 판정했습니다.`;
+  } else {
+    resultOverview.className = "result-overview blocked";
+    resultOverview.querySelector(".result-icon")!.textContent = "!";
+    resultHeadline.textContent = "검증 근거가 부족해 코드 생성을 멈췄습니다.";
+    resultDetail.textContent = String(packet.metrics.block_reason ?? "확인되지 않은 핵심 전제가 남아 있습니다.");
+  }
 }
 
 function renderPacket(packet: Packet): void {
@@ -86,6 +125,7 @@ function renderPacket(packet: Packet): void {
   metricFalse.textContent = String(packet.metrics.contradicted_assumptions);
   metricPreedit.textContent = String(packet.metrics.source_edits_before_gate);
   metricChecks.textContent = `${packet.metrics.checks_passed}/${packet.metrics.checks_total}`;
+  renderResultSummary(packet);
   renderPlan(planNode, packet.initial_plan);
 
   const resultMap = Object.fromEntries(packet.probe_results.map(result => [result.assumption_id, result])) as Record<string, ProbeResult>;
@@ -98,14 +138,14 @@ function renderPacket(packet: Packet): void {
 
   if (packet.first_gate.status === "block") {
     gateBanner.className = "gate-banner block";
-    gateBanner.innerHTML = `<strong>잘못된 핵심 전제 ${packet.first_gate.blocked_assumptions.length}개 발견 — 코드 생성 차단</strong><span>아직 소스 파일은 ${packet.first_gate.source_edits_before_gate}개 수정되었습니다.</span>`;
+    gateBanner.innerHTML = `<strong>잘못된 핵심 전제 ${packet.first_gate.blocked_assumptions.length}개 발견 — 코드 생성 차단</strong><span>소스 파일 수정 ${packet.first_gate.source_edits_before_gate}개 · 코드 작성 전에 멈췄습니다.</span>`;
   }
 
   evidenceNode.innerHTML = packet.probe_results.map(result => {
     const evidence = result.evidence.map(item =>
       `<code>${esc(item.path)}${item.line_start ? `:${item.line_start}` : ""}\n${esc(item.snippet)}</code>`
     ).join("");
-    return `<article class="evidence-row"><h4>${esc(result.assumption_id)} · ${badge(result.verdict)}</h4><div class="observed"><b>관측:</b> ${esc(result.observed)}<br><b>기대:</b> ${esc(result.expected)}</div>${evidence}</article>`;
+    return `<article class="evidence-row"><h4>${esc(result.assumption_id)} · ${badge(result.verdict)}</h4><div class="observed"><b>실제 관측:</b> ${esc(result.observed)}<br><b>AI 계획의 기대:</b> ${esc(result.expected)}</div>${evidence}</article>`;
   }).join("");
 
   if (packet.revised_plan) {
@@ -118,7 +158,7 @@ function renderPacket(packet: Packet): void {
       `<article class="diff-file"><h4>${esc(edit.path)}</h4><pre>- ${esc(edit.old)}\n+ ${esc(edit.new)}</pre></article>`
     ).join("");
   } else {
-    diffNode.innerHTML = '<div class="blocked-empty">Source write interlock이 유지되어 소스 코드는 수정되지 않았습니다.</div>';
+    diffNode.innerHTML = '<div class="blocked-empty">코드 작성 잠금이 유지되어 소스 코드는 수정되지 않았습니다.</div>';
   }
   if (packet.checks.length) {
     checksNode.innerHTML = packet.checks.map(check =>
@@ -130,10 +170,24 @@ function renderPacket(packet: Packet): void {
   stagePill.textContent = packet.verdict === "ready_with_evidence" ? "검증 완료" : "차단";
 }
 
+function resetDemo(): void {
+  resultOverview.className = "result-overview running";
+  resultOverview.querySelector(".result-icon")!.textContent = "…";
+  resultHeadline.textContent = "AI 계획을 실제 저장소와 대조하고 있습니다.";
+  resultDetail.textContent = "거짓 전제가 있으면 소스 파일을 수정하기 전에 먼저 차단합니다.";
+  metricAssumptions.textContent = "…";
+  metricFalse.textContent = "…";
+  metricPreedit.textContent = "…";
+  metricChecks.textContent = "…";
+}
+
 async function run(): Promise<void> {
   runButton.disabled = true;
+  runButton.textContent = "검증 중…";
   stagePill.textContent = "실행 중";
   statusLine.textContent = "AI 계획을 만든 뒤 실제 저장소에서 핵심 전제를 확인합니다…";
+  resetDemo();
+  let didScroll = false;
   try {
     const created = await jsonFetch<{ id: string }>("/api/runs", {
       method: "POST",
@@ -142,22 +196,33 @@ async function run(): Promise<void> {
     });
     for (let i = 0; i < 160; i += 1) {
       const record = await jsonFetch<RunRecord>(`/api/runs/${created.id}`);
-      stagePill.textContent = record.stage.replaceAll("_", " ");
+      stagePill.textContent = stageLabel(record.stage);
       statusLine.textContent = record.status_message;
       renderEvents(record.events);
-      if (record.packet) renderPacket(record.packet);
+      if (record.packet) {
+        renderPacket(record.packet);
+        if (!didScroll) {
+          resultOverview.scrollIntoView({ behavior: "smooth", block: "center" });
+          didScroll = true;
+        }
+      }
       if (record.stage === "complete" || record.stage === "failed") break;
       await new Promise(resolve => window.setTimeout(resolve, 250));
     }
   } catch (error) {
     stagePill.textContent = "실패";
-    statusLine.textContent = error instanceof Error ? error.message : String(error);
+    resultOverview.className = "result-overview blocked";
+    resultOverview.querySelector(".result-icon")!.textContent = "!";
+    resultHeadline.textContent = "데모 실행에 실패했습니다.";
+    resultDetail.textContent = error instanceof Error ? error.message : String(error);
+    statusLine.textContent = resultDetail.textContent;
   } finally {
     runButton.disabled = false;
+    runButton.textContent = "30초 데모 다시 실행";
   }
 }
 
 runButton.addEventListener("click", () => { void run(); });
 void jsonFetch<{ status: string }>("/api/health")
-  .then(() => { statusLine.textContent = "준비 완료. 샘플 기능을 실행하면 30초 안에 전체 흐름을 볼 수 있습니다."; })
+  .then(() => { statusLine.textContent = "준비 완료. ‘30초 데모 시작’을 누르면 잘못된 전제 차단부터 최종 검증까지 자동으로 볼 수 있습니다."; })
   .catch(() => { statusLine.textContent = "백엔드에 연결할 수 없습니다."; });
