@@ -29,6 +29,7 @@ class OpenAICompatibleProvider(AgentProvider):
         self.model = os.getenv("PLANPROBE_OPENAI_MODEL", "qwen2.5-coder:7b")
         self.api_key = os.getenv("PLANPROBE_OPENAI_API_KEY", "ollama")
         self.timeout = float(os.getenv("PLANPROBE_LLM_TIMEOUT_SECONDS", "90"))
+        self.max_tokens = int(os.getenv("PLANPROBE_LLM_MAX_TOKENS", "1600"))
         self._calls = 0
         self._input_tokens = 0
         self._output_tokens = 0
@@ -69,6 +70,7 @@ class OpenAICompatibleProvider(AgentProvider):
                 "temperature": 0,
                 "messages": messages,
                 "response_format": {"type": "json_object"},
+                "max_tokens": self.max_tokens,
             }
             started = time.perf_counter()
             with httpx.Client(timeout=self.timeout) as client:

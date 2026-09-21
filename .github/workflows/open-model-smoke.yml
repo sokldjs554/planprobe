@@ -47,7 +47,8 @@ jobs:
           PLANPROBE_OPENAI_BASE_URL: http://127.0.0.1:11434/v1
           PLANPROBE_OPENAI_MODEL: qwen2.5-coder:1.5b
           PLANPROBE_OPENAI_API_KEY: ollama
-          PLANPROBE_LLM_TIMEOUT_SECONDS: "300"
+          PLANPROBE_LLM_TIMEOUT_SECONDS: "420"
+          PLANPROBE_LLM_MAX_TOKENS: "1200"
         run: |
           set +e
           python -m planprobe.cli preflight             --workspace .             --provider openai-compatible             --output artifacts/qwen-preflight.json
