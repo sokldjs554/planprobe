@@ -5,7 +5,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, cast
 
 from planprobe.models import EvidenceRef, ProbeResult, ProbeSpec
 
@@ -24,10 +24,11 @@ def run_probe(workspace: Path, spec: ProbeSpec) -> ProbeResult:
         verdict, observed, expected, evidence = _function_signature(workspace, spec)
     else:
         verdict, observed, expected, evidence = "unknown", "unsupported probe", "supported probe", []
+    typed_verdict = cast(Literal["verified", "contradicted", "unknown"], verdict)
     return ProbeResult(
         probe_id=spec.id,
         assumption_id=spec.assumption_id,
-        verdict=verdict,
+        verdict=typed_verdict,
         observed=observed,
         expected=expected,
         evidence=evidence,
