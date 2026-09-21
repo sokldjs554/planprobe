@@ -1,5 +1,10 @@
 # PlanProbe
 
+[![CI](https://github.com/sokldjs554/planprobe/actions/workflows/ci.yml/badge.svg)](https://github.com/sokldjs554/planprobe/actions/workflows/ci.yml)
+[![Live smoke](https://github.com/sokldjs554/planprobe/actions/workflows/live-smoke.yml/badge.svg)](https://github.com/sokldjs554/planprobe/actions/workflows/live-smoke.yml)
+
+**Live demo:** https://planprobe.onrender.com
+
 > **AI가 코드를 쓰기 전에, 구현 계획이 기대는 전제를 실제 저장소에서 먼저 반증하는 개발 생산성 시스템.**
 
 PlanProbe는 챗봇이 아니다. 기능 요청을 받은 AI coding workflow가 바로 소스 코드를 수정하지 못하게 하고, 먼저 구현 계획의 암묵적 전제를 꺼내 실제 코드·스키마·설정·기존 테스트에 연결된 실행 가능한 probe로 검증한다.
@@ -28,7 +33,12 @@ Source Patch
 
 현재 공개 생태계의 assumption ledger, assumption popup, plan citation gate와 겹치지 않도록 제품 경계를 더 좁혔다. 핵심은 **자동 추출된 implicit premise를 finite executable probe로 컴파일하고, 실제 실행 결과가 code-write interlock을 결정한다는 것**이다. 자세한 충돌 조사는 `docs/COLLISION_AUDIT.md`에 남겼다.
 
-## 로컬 데모
+## 데모
+
+공개 데모는 **https://planprobe.onrender.com** 에 배포되어 있다. 첫 화면의 **샘플 기능 검증 시작** 버튼 하나로 계획 → 전제 추출 → 저장소 probe → 사전 차단 → 근거 기반 재계획 → source patch → 회귀 검증까지 볼 수 있다. 채팅 UI는 사용하지 않는다.
+
+### 로컬 실행
+
 
 ```bash
 python -m pip install -e .
@@ -77,9 +87,19 @@ PYTHONPATH=. python scripts/evaluate_demo.py
 
 추가로 고정된 repository-contract suite를 만들었다. `schema`, `timezone/config`, `idempotency/retry`, `state order`, `backward compatibility`, `authorization/ownership` 6개 전제 유형 × 4개씩 총 **24개**다. 현재 로컬 결과는 **전제 판정 24/24**, **Gate 판정 24/24**, **probe 중 source 불변 24/24**, **false block 0**, **missed block 0**, 명시적 `unknown` 6개다. 이 역시 probe/gate 엔진 검증이지 LLM 품질 결과는 아니다. 원시는 `artifacts/probe-suite.json`에 저장된다.
 
-실제 모델 경로도 보완했다. 원격 모델에게 로컬 경로 문자열만 넘기지 않고 bounded repository source context를 전달하며, provider가 usage를 반환하면 call/input/output token/latency를 기록한다. 실제 Qwen/hosted 비교는 아직 실행하지 않았고 수치도 주장하지 않는다.
+실제 모델 경로도 보완했다. 원격 모델에게 로컬 경로 문자열만 넘기지 않고 bounded repository source context를 전달하며, provider가 usage를 반환하면 call/input/output token/latency를 기록한다. 실제 Qwen/hosted 비교는 아직 실행하지 않았고 수치도 주장하지 않는다. Direct coding / self-reflect와의 실제 모델 비교 실험 역시 별도 증거가 생기기 전까지 성능 우위를 주장하지 않는다.
 
-Ruff/mypy는 현재 작업 컨테이너에 도구가 없어 아직 로컬 실행을 주장하지 않으며 GitHub CI에서 실제 검증할 예정이다. 현재 컨테이너의 전역 `pip check`는 PlanProbe와 무관한 기존 MoviePy/Pillow 충돌 때문에 실패하므로 로컬 환경 전체가 깨끗하다고 주장하지 않는다. GitHub CI는 격리된 새 환경에서 PlanProbe 의존성만 설치해 검증하도록 구성했다.
+GitHub Actions의 격리 환경에서 Python **3.11 / 3.12 / 3.13** 매트릭스로 설치, `pip check`, pytest, Ruff, mypy, TypeScript strict typecheck, 24-case repository-contract suite, 전체 deterministic pipeline을 실제 검증한다. 현재 main의 CI와 배포 대상 E2E smoke가 모두 통과한 상태다.
+
+## 배포 검증
+
+`live-smoke` workflow는 단순히 URL이 열리는지만 확인하지 않는다. Render의 `/api/release`가 **검증 중인 GitHub SHA와 정확히 일치할 때까지 기다린 뒤**, 공개 API에 실제 데모 요청을 제출하고 다음 조건을 검사한다.
+
+- 첫 Gate가 `block`이며 차단 전 source edit가 **0**
+- 차단된 전제가 데모 계약의 `A-UTC`, `A-REGION`과 일치
+- 재계획·patch·최종 검증을 거친 verdict가 **`ready_with_evidence`**
+
+따라서 README/문서만 바뀐 최종 커밋도 동일한 exact-commit 배포 검증을 다시 거친다.
 
 ## Fail-closed 경계
 
