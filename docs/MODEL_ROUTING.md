@@ -7,11 +7,8 @@ Model choice is separate from verification authority.
 ### deterministic-demo
 Credential-free reproducible demonstration. Proves pipeline mechanics only.
 
-### ollama
-Native Ollama route using `/api/chat` JSON-schema structured outputs. The real open-model smoke uses this route with Qwen2.5-Coder 1.5B.
-
 ### openai-compatible
-Designed for vLLM or another OpenAI-compatible local/server endpoint. JSON artifacts are schema-validated.
+Used for Ollama, vLLM, or another OpenAI-compatible local/server endpoint. JSON artifacts are schema-validated. The verified real open-model smoke uses Ollama's OpenAI-compatible endpoint with Qwen2.5-Coder 1.5B.
 
 ### anthropic
 Optional hosted route for planning/replanning/patch proposals.
@@ -35,7 +32,7 @@ Remote/local model adapters receive a bounded source pack rather than a local fi
 
 When the provider API returns usage data, PlanProbe records model route, model id, call count, input/output tokens, and accumulated model latency in the run packet. `scripts/run_model_smoke.py` writes an auditable smoke artifact without storing API keys.
 
-A real GitHub Actions smoke now exercises the native Ollama route with Ollama 0.34.2 and Qwen2.5-Coder 1.5B. The captured run recorded 2 model calls, 3,486 input tokens, 1,208 output tokens, about 120.2 s accumulated model latency, zero schema retries/fallbacks, and a fail-closed block with zero source edits. These remain plumbing/integration measurements, not a model-quality benchmark.
+A real GitHub Actions smoke exercises the OpenAI-compatible route against Ollama 0.34.2 with Qwen2.5-Coder 1.5B. The captured run recorded 2 model calls, 3,486 input tokens, 1,208 output tokens, about 120.2 s accumulated model latency, zero schema retries/fallbacks, and a fail-closed block with zero source edits. These remain plumbing/integration measurements, not a model-quality benchmark.
 
 
 ## Coding-agent client boundary
