@@ -3,46 +3,60 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="PlanProbe — AI가 코드를 쓰기 전에 틀린 전제를 저장소 증거로 검증하는 개발 생산성 시스템" />
+  <meta name="description" content="PlanProbe — AI가 코드를 쓰기 전에 틀린 전제를 실제 저장소 증거로 검증하는 개발 생산성 시스템" />
   <title>PlanProbe — 코드 작성 전 전제 검증</title>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
   <div class="shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">P</span><div><b>PlanProbe</b><small>pre-code evidence gate</small></div></div>
-      <div class="actions"><span id="stage-pill" class="stage-pill">대기</span><button id="run-demo" class="primary">샘플 기능 검증 시작</button></div>
+      <div class="brand"><span class="brand-mark">P</span><div><b>PlanProbe</b><small>코드 작성 전 전제 검증</small></div></div>
+      <div class="actions"><span id="stage-pill" class="stage-pill">대기</span><button id="run-demo" class="primary">30초 데모 시작</button></div>
     </header>
 
     <main>
       <section class="hero">
         <div>
-          <p class="eyebrow">NO CHAT · PLAN → PROBE → CODE</p>
-          <h1>AI가 코드를 쓰기 전에,<br><em>틀린 전제부터 잡습니다.</em></h1>
-          <p class="lead">기능 요청을 받은 AI가 구현 계획을 세우면 PlanProbe가 그 계획이 기대는 전제를 실제 저장소에서 먼저 검증합니다. 거짓 전제가 있으면 소스 수정은 시작조차 하지 않습니다.</p>
-          <div class="flowline"><span>기능 요청</span><i>→</i><span>AI 계획</span><i>→</i><span>전제 검증</span><i>→</i><span>재계획</span><i>→</i><span>코드</span></div>
+          <p class="eyebrow">면접관용 30초 데모 · 챗봇 아님</p>
+          <h1>AI가 코드를 쓰기 전에,<br><em>틀린 전제부터 검증합니다.</em></h1>
+          <p class="lead">기능 요청을 받은 AI가 바로 코드를 쓰지 못하게 합니다. 먼저 구현 계획 속 전제를 실제 저장소에서 확인하고, 틀리면 <b>소스 수정 0개 상태에서 차단</b>한 뒤 근거를 반영해 다시 계획합니다.</p>
+          <div class="flowline"><span>기능 요청</span><i>→</i><span>AI 계획</span><i>→</i><span>저장소 검증</span><i>→</i><span>재계획</span><i>→</i><span>코드 생성</span><i>→</i><span>테스트</span></div>
         </div>
         <aside class="hero-card">
-          <span class="kicker">합성 LIVEOPS 저장소</span>
-          <h3>연속 접속 보너스 추가</h3>
-          <p>기존 지역별 시간 규칙·다중 지역·중복 재시도 계약을 깨뜨리지 않고 기능을 추가해야 합니다.</p>
-          <div class="callout">핵심 질문<br><b>“AI의 구현 계획이 실제 코드베이스와 맞는가?”</b></div>
+          <span class="kicker">30초 안에 확인할 3가지</span>
+          <div class="glance-list">
+            <div><b>1</b><span>AI가 구현 전에 세운 전제를 분리합니다.</span></div>
+            <div><b>2</b><span>실제 코드·스키마·테스트와 대조해 거짓 전제를 찾습니다.</span></div>
+            <div><b>3</b><span>틀리면 코드 작성을 막고, 증거 기반 계획만 구현하게 합니다.</span></div>
+          </div>
+          <div class="callout">샘플 시나리오<br><b>글로벌 이벤트 연속 접속 보너스 추가</b></div>
         </aside>
       </section>
 
       <section class="status"><span class="pulse"></span><span id="status-line">백엔드 연결 확인 중…</span></section>
 
+      <section id="result-overview" class="result-overview idle">
+        <div class="result-icon">→</div>
+        <div>
+          <span class="result-kicker">실행 결과 요약</span>
+          <strong id="result-headline">아직 실행 전입니다.</strong>
+          <p id="result-detail">상단의 ‘30초 데모 시작’을 누르면 코드 작성 전 차단부터 최종 검증까지 자동으로 진행됩니다.</p>
+        </div>
+      </section>
+
       <section class="summary-grid">
-        <article><span>추출 전제</span><strong id="metric-assumptions">—</strong></article>
-        <article><span>거짓 전제</span><strong id="metric-false">—</strong></article>
+        <article><span>AI가 세운 전제</span><strong id="metric-assumptions">—</strong></article>
+        <article><span>코드 전에 잡은 오류</span><strong id="metric-false">—</strong></article>
         <article><span>차단 전 소스 수정</span><strong id="metric-preedit">—</strong></article>
         <article><span>최종 검증</span><strong id="metric-checks">—</strong></article>
       </section>
 
       <section class="panel request-panel">
-        <div class="section-head"><div><span class="num">01</span><h2>기능 요청</h2></div><p>채팅이 아니라 작업 요청 한 건을 입력하는 제품형 흐름입니다.</p></div>
+        <div class="section-head"><div><span class="num">01</span><h2>기능 요청</h2></div><p>채팅이 아니라 실제 개발 작업 한 건을 입력하는 흐름입니다.</p></div>
         <textarea id="request-text" rows="3">글로벌 이벤트 보상에 연속 접속 보너스를 추가해주세요. 기존 중복 요청 재시도 안전성과 지역별 이벤트 시간 판정, 다중 지역 요청은 깨지지 않아야 합니다.</textarea>
       </section>
+
+      <div class="detail-divider"><span>여기부터는 기술 상세</span><p>면접관은 위 결과만 봐도 동작을 이해할 수 있고, 아래에서 근거와 구현 세부를 확인할 수 있습니다.</p></div>
 
       <section class="panel">
         <div class="section-head"><div><span class="num">02</span><h2>AI가 세운 구현 계획</h2></div><p>코드를 쓰기 전의 계획과 그 계획이 암묵적으로 기대는 조건을 분리해서 봅니다.</p></div>
@@ -51,17 +65,17 @@
 
       <section class="panel premise-panel">
         <div class="section-head"><div><span class="num">03</span><h2>코드 작성 전 전제 검증</h2></div><p>LLM이 자기 전제를 채점하지 않습니다. 실제 코드·스키마·테스트를 probe가 검사합니다.</p></div>
-        <div id="gate-banner" class="gate-banner idle"><strong>검증 대기</strong><span>샘플 기능 검증을 시작하면 핵심 전제가 표시됩니다.</span></div>
+        <div id="gate-banner" class="gate-banner idle"><strong>검증 대기</strong><span>30초 데모를 시작하면 핵심 전제가 표시됩니다.</span></div>
         <div id="assumptions" class="assumption-grid empty">전제 결과가 여기에 표시됩니다.</div>
       </section>
 
       <section class="split">
         <section class="panel">
-          <div class="section-head"><div><span class="num">04</span><h2>AI의 생각 vs 실제 저장소</h2></div><p>거짓 전제를 한 번에 이해할 수 있도록 근거 파일과 실제 관측값을 바로 붙입니다.</p></div>
+          <div class="section-head"><div><span class="num">04</span><h2>AI의 생각 vs 실제 저장소</h2></div><p>거짓 전제를 근거 파일과 실제 관측값에 바로 연결합니다.</p></div>
           <div id="evidence" class="evidence empty">저장소 근거가 여기에 표시됩니다.</div>
         </section>
         <section class="panel">
-          <div class="section-head"><div><span class="num">05</span><h2>실행 과정</h2></div><p>계획 → probe → 차단 → 재계획 → 코드 → 검증.</p></div>
+          <div class="section-head"><div><span class="num">05</span><h2>실행 과정</h2></div><p>계획 → 전제 추출 → 저장소 검사 → 차단 → 재계획 → 코드 → 검증.</p></div>
           <div id="events" class="events empty">실행 로그가 여기에 표시됩니다.</div>
         </section>
       </section>
@@ -72,22 +86,22 @@
       </section>
 
       <section class="panel diff-panel">
-        <div class="section-head"><div><span class="num">07</span><h2>실제 코드 변경</h2></div><p>검증된 계획에서 생성된 source-only patch. 테스트와 gate는 수정할 수 없습니다.</p></div>
+        <div class="section-head"><div><span class="num">07</span><h2>실제 코드 변경</h2></div><p>검증된 계획에서 생성된 source-only patch. 테스트와 Gate는 수정할 수 없습니다.</p></div>
         <div id="diff" class="diff empty">코드 변경은 전제 Gate를 통과한 뒤에만 생성됩니다.</div>
       </section>
 
       <section class="panel final-panel">
-        <div class="section-head"><div><span class="num">08</span><h2>최종 검증</h2></div><p>기존 계약과 새 기능을 같이 검사합니다.</p></div>
+        <div class="section-head"><div><span class="num">08</span><h2>최종 검증</h2></div><p>기존 계약과 새 기능을 함께 검사합니다.</p></div>
         <div id="checks" class="checks empty">최종 검증 결과가 여기에 표시됩니다.</div>
       </section>
 
       <section class="product-note">
-        <b>이 데모는 챗봇이 아닙니다.</b>
-        <span>LLM은 계획·전제·재계획·patch 제안에 쓰이고, 사실 판정은 실행 가능한 저장소 probe와 테스트가 담당합니다.</span>
+        <b>LLM은 제안하고, 저장소가 판정합니다.</b>
+        <span>계획·전제·재계획·patch 제안에는 LLM을 쓸 수 있지만, 사실 판정은 실행 가능한 저장소 probe와 테스트가 담당합니다.</span>
       </section>
     </main>
 
-    <footer><span>PlanProbe v0.1 · portfolio-safe synthetic repository</span><span>실제 게임스프링 내부 시스템이나 플레이어 데이터는 사용하지 않습니다.</span></footer>
+    <footer><span>PlanProbe v0.1 · 합성 저장소 기반 포트폴리오 데모</span><span>실제 게임스프링 내부 시스템이나 플레이어 데이터는 사용하거나 추정하지 않습니다.</span></footer>
   </div>
   <script type="module" src="/static/app.js"></script>
 </body>
