@@ -11,6 +11,7 @@ def build_provider(name: str) -> AgentProvider:
     if name == "deterministic-demo":
         return DeterministicDemoProvider()
     if name == "ollama":
+        # Ollama uses the already-verified OpenAI-compatible structured-output path.
         return OllamaProvider()
     if name in {"openai-compatible", "vllm"}:
         return OpenAICompatibleProvider()
