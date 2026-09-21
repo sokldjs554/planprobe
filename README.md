@@ -36,7 +36,7 @@ Source Patch
 
 ## 데모
 
-공개 데모는 **https://planprobe.onrender.com** 에 배포되어 있다. 첫 화면의 **샘플 기능 검증 시작** 버튼 하나로 계획 → 전제 추출 → 저장소 probe → 사전 차단 → 근거 기반 재계획 → source patch → 회귀 검증까지 볼 수 있다. 채팅 UI는 사용하지 않는다.
+공개 데모는 **https://planprobe.onrender.com** 에 배포되어 있다. 첫 화면의 **30초 데모 시작** 버튼 하나로 계획 → 전제 추출 → 저장소 probe → 사전 차단 → 근거 기반 재계획 → source patch → 회귀 검증까지 볼 수 있다. 채팅 UI는 사용하지 않는다.
 
 ### 로컬 실행
 
@@ -69,8 +69,7 @@ planprobe preflight --workspace . --provider openai-compatible --request "..."
 ## 모델 경로
 
 - deterministic demo
-- native Ollama structured-output route (Qwen 계열)
-- OpenAI-compatible local/open route (vLLM 등)
+- OpenAI-compatible local/open route (Ollama/vLLM/Qwen 계열)
 - optional hosted Messages API route
 
 어떤 모델도 자기 전제를 `verified`로 판정할 권한은 없다.
@@ -99,7 +98,7 @@ PYTHONPATH=. python scripts/evaluate_demo.py
 
 추가로 고정된 repository-contract suite를 만들었다. `schema`, `timezone/config`, `idempotency/retry`, `state order`, `backward compatibility`, `authorization/ownership` 6개 전제 유형 × 4개씩 총 **24개**다. 현재 로컬 결과는 **전제 판정 24/24**, **Gate 판정 24/24**, **probe 중 source 불변 24/24**, **false block 0**, **missed block 0**, 명시적 `unknown` 6개다. 이 역시 probe/gate 엔진 검증이지 LLM 품질 결과는 아니다. 원시는 `artifacts/probe-suite.json`에 저장된다.
 
-실제 모델 경로도 검증했다. GitHub Actions에서 **Ollama 0.34.2 + Qwen2.5-Coder 1.5B**를 실제로 내려받아 native Ollama JSON-schema preflight를 실행했고, `source_edits=0` 상태에서 fail-closed gate까지 통과했다. 해당 smoke run의 기록은 **2 model calls / 3,486 input tokens / 1,208 output tokens / 약 120.2초 누적 model latency / schema retry 0 / schema fallback 0**이다. 이 수치는 **실제 모델 연결과 구조화 출력·fail-closed plumbing 증거**이지 모델 품질 우위 벤치마크가 아니다. Hosted-model 비교와 Direct coding / self-reflect 비교 실험은 아직 별도 증거가 없으므로 성능 우위를 주장하지 않는다.
+실제 모델 경로도 검증했다. GitHub Actions에서 **Ollama 0.34.2 + Qwen2.5-Coder 1.5B**를 실제로 내려받아 Ollama의 OpenAI-compatible endpoint를 통한 JSON-schema preflight를 실행했고, `source_edits=0` 상태에서 fail-closed gate까지 통과했다. 해당 smoke run의 기록은 **2 model calls / 3,486 input tokens / 1,208 output tokens / 약 120.2초 누적 model latency / schema retry 0 / schema fallback 0**이다. 이 수치는 **실제 모델 연결과 구조화 출력·fail-closed plumbing 증거**이지 모델 품질 우위 벤치마크가 아니다. Hosted-model 비교와 Direct coding / self-reflect 비교 실험은 아직 별도 증거가 없으므로 성능 우위를 주장하지 않는다.
 
 GitHub Actions의 격리 환경에서 Python **3.11 / 3.12 / 3.13** 매트릭스로 설치, `pip check`, pytest, Ruff, mypy, TypeScript strict typecheck, 24-case repository-contract suite, vendor-neutral preflight CLI, 전체 deterministic pipeline을 실제 검증한다. 별도 workflow에서는 Ollama/Qwen 실제 preflight를 실행하고, 배포 workflow는 Render의 exact commit을 대상으로 공개 API E2E를 검사한다.
 
