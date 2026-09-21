@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/open-model-smoke.yml"
+      - "planprobe/agent/openai_compat.py"
+      - "planprobe/agent/context.py"
+      - "planprobe/preflight.py"
+      - "planprobe/models.py"
   workflow_dispatch:
 
 jobs:
@@ -68,6 +72,7 @@ jobs:
               "input_tokens": p["metrics"]["llm_input_tokens"],
               "output_tokens": p["metrics"]["llm_output_tokens"],
               "latency_ms": p["metrics"]["llm_latency_ms"],
+              "validation_retries": p["metrics"]["llm_validation_retries"],
               "model": p["metrics"]["llm_model"],
           }, ensure_ascii=False))
           PY
