@@ -169,7 +169,6 @@ def _function_signature(workspace: Path, spec: ProbeSpec) -> tuple[str, str, str
                 ok = all(param in actual for param in expected_params)
                 expected = f"contains params={expected_params}"
             line = node.lineno
-            end = getattr(node, "end_lineno", line)
             header = lines[line - 1] if lines else ""
             return (
                 "verified" if ok else "contradicted",
