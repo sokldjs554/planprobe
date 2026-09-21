@@ -49,7 +49,8 @@ class OpenAICompatibleProvider(AgentProvider):
         self._output_tokens = 0
         self._latency_ms = 0.0
         self._validation_retries = 0
-        self._schema_fallbacks = 0\n        self._rejected_probes = 0
+        self._schema_fallbacks = 0
+        self._rejected_probes = 0
 
     def metrics(self) -> dict[str, int | float | str]:
         return {
@@ -60,7 +61,8 @@ class OpenAICompatibleProvider(AgentProvider):
             "llm_model": self.model,
             "llm_route": self.name,
             "llm_validation_retries": self._validation_retries,
-            "llm_schema_fallbacks": self._schema_fallbacks,\n            "llm_rejected_probes": self._rejected_probes,
+            "llm_schema_fallbacks": self._schema_fallbacks,
+            "llm_rejected_probes": self._rejected_probes,
         }
 
     def _json(self, system: str, user: str, model_type: type[T]) -> T:
