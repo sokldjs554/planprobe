@@ -5,6 +5,7 @@ import shutil
 import time
 import uuid
 from pathlib import Path
+from typing import Literal
 
 from planprobe.agent.factory import build_provider
 from planprobe.engine.gate import decide_gate
@@ -111,7 +112,9 @@ class PlanProbePipeline:
             self._event(run_id, RunStage.VERIFYING, "기존 계약과 신규 기능 검증을 함께 실행합니다.")
             checks = run_checks(workspace)
             passed = all(check.status == "pass" for check in checks)
-            verdict = "ready_with_evidence" if passed else "blocked"
+            verdict: Literal["ready_with_evidence", "blocked"] = (
+                "ready_with_evidence" if passed else "blocked"
+            )
             packet = RunPacket(
                 run_id=run_id,
                 request_text=record.request_text,
