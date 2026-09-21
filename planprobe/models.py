@@ -54,7 +54,7 @@ class ProbeSpec(BaseModel):
     rationale: str
 
     @model_validator(mode="after")
-    def validate_probe_contract(self) -> "ProbeSpec":
+    def validate_probe_contract(self) -> ProbeSpec:
         normalized_target = self.target_path.replace("\\", "/").strip()
         if (
             not normalized_target
