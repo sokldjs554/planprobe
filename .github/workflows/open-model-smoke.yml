@@ -79,6 +79,18 @@ jobs:
           assert p["metrics"]["llm_calls"] >= 2
           assert p["metrics"]["source_edits"] == 0
           assert p["gate"]["status"] in {"pass","block"}
+          results = p["probe_results"]
+          assert results, "real Qwen preflight produced no repository probes"
+          assert not any(
+              str(result["observed"]).startswith("probe execution failed:")
+              for result in results
+          ), "real Qwen preflight emitted a semantically invalid executable probe"
+          decisive = [
+              result for result in results
+              if result["verdict"] in {"verified", "contradicted"}
+          ]
+          assert decisive, "real Qwen preflight produced no decisive repository probe"
+          assert any(result["evidence"] for result in decisive), "decisive probe is missing repository evidence"
           print(json.dumps({
               "gate": p["gate"]["status"],
               "blocked": p["gate"]["blocked_assumptions"],
