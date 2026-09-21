@@ -45,7 +45,7 @@ def demo_request() -> dict[str, str]:
 
 @app.post("/api/runs", status_code=202)
 def create_run(body: RunRequest) -> dict[str, str]:
-    if body.provider not in {"deterministic-demo", "openai-compatible", "ollama", "vllm", "anthropic"}:
+    if body.provider not in {"deterministic-demo", "openai-compatible", "vllm", "anthropic"}:
         raise HTTPException(status_code=400, detail="Unsupported provider")
     run_id = PIPELINE.start(body.request_text, body.provider)
     EXECUTOR.submit(PIPELINE.execute, run_id)
