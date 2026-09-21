@@ -1,29 +1,66 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-_ALLOWED_ROOTS = ("synthetic_app/liveops_service",)
-_ALLOWED_SUFFIXES = {".py", ".toml", ".json", ".yaml", ".yml"}
+_ALLOWED_SUFFIXES = {".py", ".toml", ".json", ".yaml", ".yml", ".ts", ".tsx", ".js", ".jsx"}
+_EXCLUDED_PARTS = {
+    ".git",
+    ".hg",
+    ".svn",
+    ".venv",
+    "venv",
+    "node_modules",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "dist",
+    "build",
+}
+
+
+def _roots(workspace: Path) -> list[Path]:
+    explicit = os.getenv("PLANPROBE_CONTEXT_ROOTS", "").strip()
+    if explicit:
+        roots: list[Path] = []
+        base = workspace.resolve()
+        for raw in explicit.split(","):
+            candidate = (base / raw.strip()).resolve()
+            if candidate == base or base in candidate.parents:
+                if candidate.exists():
+                    roots.append(candidate)
+        if roots:
+            return roots
+
+    preferred = workspace / "synthetic_app" / "liveops_service"
+    if preferred.exists():
+        return [preferred]
+    return [workspace]
 
 
 def repository_context(workspace: Path, *, max_chars: int = 24_000) -> str:
-    """Build a bounded, deterministic repository context for remote/local model routes.
+    """Build a bounded repository source pack for local or hosted model routes.
 
-    A filesystem path is not useful to a remote model, so PlanProbe sends an explicit source pack.
-    Repository text is treated as untrusted data; callers must keep verification authority outside the model.
+    Repository text is untrusted data. Model output never owns verification authority.
     """
+
     chunks: list[str] = []
     used = 0
-    for root_name in _ALLOWED_ROOTS:
-        root = workspace / root_name
-        if not root.exists():
-            continue
+    base = workspace.resolve()
+
+    for root in _roots(base):
         for path in sorted(root.rglob("*")):
             if not path.is_file() or path.suffix not in _ALLOWED_SUFFIXES:
                 continue
-            if any(part in {"__pycache__", ".pytest_cache"} for part in path.parts):
+            if any(part in _EXCLUDED_PARTS for part in path.parts):
                 continue
-            rel = path.relative_to(workspace).as_posix()
+            try:
+                if path.stat().st_size > 512_000:
+                    continue
+            except OSError:
+                continue
+            rel = path.relative_to(base).as_posix()
             text = path.read_text(encoding="utf-8", errors="replace")
             block = f"\n<repository-file path={rel!r}>\n{text}\n</repository-file>\n"
             remaining = max_chars - used
@@ -35,6 +72,7 @@ def repository_context(workspace: Path, *, max_chars: int = 24_000) -> str:
             used += len(block)
         if used >= max_chars:
             break
+
     if not chunks:
         return "<repository-context empty='true'/>"
     return "".join(chunks)

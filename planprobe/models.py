@@ -116,6 +116,18 @@ class RunPacket(BaseModel):
     limitations: list[str]
 
 
+class PreflightPacket(BaseModel):
+    request_text: str
+    provider: str
+    workspace: str
+    initial_plan: ImplementationPlan
+    probes: list[ProbeSpec]
+    probe_results: list[ProbeResult]
+    gate: GateDecision
+    metrics: dict[str, int | float | str]
+    limitations: list[str]
+
+
 class RunRecord(BaseModel):
     id: str
     request_text: str

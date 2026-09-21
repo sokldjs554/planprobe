@@ -55,6 +55,16 @@ python -m planprobe.cli demo > packet.json
 
 기본 데모는 credential이 필요 없는 deterministic provider를 사용한다. 이는 agent/verification orchestration을 재현하기 위한 것이며 실제 LLM 코딩 품질 결과로 주장하지 않는다.
 
+## Coding-agent 연결
+
+PlanProbe는 Claude Code 전용이 아니다. `planprobe preflight` CLI를 통해 **Claude Code / Cursor / Codex / 기타 coding agent**가 코드 작성 전에 동일한 검증 계약을 호출할 수 있다.
+
+```bash
+planprobe preflight --workspace . --provider openai-compatible --request "..."
+```
+
+핵심 전제가 거짓이거나 확인되지 않으면 exit code **2**로 종료하고 source edit는 0으로 유지한다. 자세한 계약은 `docs/AGENT_INTEGRATION.md`에 있다. 특정 vendor client를 실제 benchmark했다고 주장하지 않으며, 구현된 증거는 vendor-neutral CLI boundary 자체다.
+
 ## 모델 경로
 
 - deterministic demo

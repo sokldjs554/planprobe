@@ -55,3 +55,23 @@ Still deliberately unclaimed:
 - comparative superiority over Direct coding / Self-reflect.
 
 These remaining research experiments are not required to claim that the product, CI, deployment, and deterministic verification engine exist and are operational.
+
+
+## Gate 4 — vendor-neutral coding-agent preflight (2026-09-21)
+
+A product-fit check was run before this expansion. The change strengthens the posting's Vibe Coding / AI-tool usage requirement without making PlanProbe Claude-only.
+
+Implemented:
+- `planprobe preflight --workspace ... --provider ... --request ...`;
+- process exit code 0 for verified preflight and 2 for a blocked pre-code gate;
+- machine-readable JSON evidence packet;
+- zero source modifications during preflight;
+- repository context fallback for non-demo workspaces, with bounded file types and excluded generated/vendor directories;
+- documented compatibility boundary for Claude Code, Cursor, Codex, and other coding agents that can invoke a CLI command.
+
+Collision check at this gate searched public GitHub for combinations of coding-agent preflight, repository assumptions, executable premise probes, and source-write interlocks. No directly matching repository was found in those searches. This is not a claim of global novelty.
+
+Still unclaimed:
+- vendor-specific benchmark quality;
+- real Qwen/hosted model comparative results;
+- superiority over direct coding/self-reflect baselines.
