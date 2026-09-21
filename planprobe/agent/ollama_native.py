@@ -4,7 +4,7 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import TypeVar
 
 import httpx
 from pydantic import BaseModel, ValidationError
