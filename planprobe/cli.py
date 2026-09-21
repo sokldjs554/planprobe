@@ -30,22 +30,22 @@ def main() -> None:
             pipeline = PlanProbePipeline(root, store)
             pipeline.runs_root = Path(temp) / "runs"
             run_id = pipeline.start(args.request, args.provider)
-            packet = pipeline.execute(run_id)
-            print(packet.model_dump_json(indent=2))
+            demo_packet = pipeline.execute(run_id)
+            print(demo_packet.model_dump_json(indent=2))
         return
 
-    packet = run_preflight(
+    preflight_packet = run_preflight(
         workspace=Path(args.workspace),
         request_text=args.request,
         provider_name=args.provider,
     )
-    rendered = packet.model_dump_json(indent=2)
+    rendered = preflight_packet.model_dump_json(indent=2)
     if args.output:
         path = Path(args.output)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(rendered + "\n", encoding="utf-8")
     print(rendered)
-    if packet.gate.status == "block":
+    if preflight_packet.gate.status == "block":
         raise SystemExit(2)
     raise SystemExit(0)
 
