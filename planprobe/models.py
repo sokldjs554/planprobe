@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class RunStage(StrEnum):
@@ -52,6 +52,48 @@ class ProbeSpec(BaseModel):
     target_path: str
     params: dict[str, Any]
     rationale: str
+
+    @model_validator(mode="after")
+    def validate_probe_contract(self) -> "ProbeSpec":
+        normalized_target = self.target_path.replace("\\", "/").strip()
+        if (
+            not normalized_target
+            or normalized_target.startswith("/")
+            or ".." in normalized_target.split("/")
+        ):
+            raise ValueError("target_path must be a relative repository path")
+
+        required_by_kind: dict[ProbeKind, set[str]] = {
+            "mapping_all_equal": {"symbol", "expected_value"},
+            "field_shape": {"class", "field", "expected_shape"},
+            "pytest_node": {"node"},
+            "ast_order": {"function", "before", "after"},
+            "function_signature": {"function", "expected_params"},
+        }
+        missing = sorted(key for key in required_by_kind[self.kind] if key not in self.params)
+        if missing:
+            raise ValueError(f"{self.kind} probe is missing params: {missing}")
+
+        if self.kind == "field_shape" and self.params["expected_shape"] not in {"scalar", "list"}:
+            raise ValueError("field_shape expected_shape must be scalar or list")
+
+        if self.kind == "pytest_node":
+            node = str(self.params["node"])
+            prefix = f"{normalized_target}::"
+            if not node.startswith(prefix):
+                raise ValueError("pytest_node params.node must start with target_path::")
+            test_name = node.rsplit("::", 1)[-1]
+            if not test_name.startswith("test_"):
+                raise ValueError("pytest_node must reference an exact test_* function")
+
+        if self.kind == "function_signature":
+            expected_params = self.params["expected_params"]
+            if not isinstance(expected_params, list) or not all(isinstance(item, str) for item in expected_params):
+                raise ValueError("function_signature expected_params must be a list of strings")
+            if self.params.get("mode", "subset") not in {"subset", "exact"}:
+                raise ValueError("function_signature mode must be subset or exact")
+
+        return self
 
 
 class EvidenceRef(BaseModel):
