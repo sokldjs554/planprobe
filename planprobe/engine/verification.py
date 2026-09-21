@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import os
 import subprocess
 import sys
 import tempfile
 import time
-from pathlib import Path
 
 from planprobe.models import CheckResult
 
