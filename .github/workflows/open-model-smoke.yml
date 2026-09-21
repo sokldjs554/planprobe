@@ -6,6 +6,8 @@ on:
     paths:
       - ".github/workflows/open-model-smoke.yml"
       - "planprobe/agent/openai_compat.py"
+      - "planprobe/agent/ollama_native.py"
+      - "planprobe/agent/factory.py"
       - "planprobe/agent/context.py"
       - "planprobe/preflight.py"
       - "planprobe/models.py"
@@ -55,16 +57,14 @@ jobs:
       - name: Run real Qwen preflight
         shell: bash
         env:
-          PLANPROBE_OPENAI_BASE_URL: http://127.0.0.1:11434/v1
-          PLANPROBE_OPENAI_MODEL: qwen2.5-coder:1.5b
-          PLANPROBE_OPENAI_API_KEY: ollama
+          PLANPROBE_OLLAMA_BASE_URL: http://127.0.0.1:11434
+          PLANPROBE_OLLAMA_MODEL: qwen2.5-coder:1.5b
           PLANPROBE_LLM_TIMEOUT_SECONDS: "300"
-          PLANPROBE_LLM_MAX_TOKENS: "800"
-          PLANPROBE_OPENAI_RESPONSE_FORMAT: json_schema
+          PLANPROBE_LLM_MAX_TOKENS: "900"
           PLANPROBE_CONTEXT_ROOTS: synthetic_app/liveops_service
         run: |
           set +e
-          python -m planprobe.cli preflight             --workspace .             --provider openai-compatible             --output artifacts/qwen-preflight.json
+          python -m planprobe.cli preflight             --workspace .             --provider ollama             --output artifacts/qwen-preflight.json
           code=$?
           set -e
           if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then
@@ -74,7 +74,7 @@ jobs:
           python - <<'PY'
           import json
           p=json.load(open("artifacts/qwen-preflight.json"))
-          assert p["provider"] == "openai-compatible"
+          assert p["provider"] == "ollama"
           assert p["metrics"]["llm_model"] == "qwen2.5-coder:1.5b"
           assert p["metrics"]["llm_calls"] >= 2
           assert p["metrics"]["source_edits"] == 0
