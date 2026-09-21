@@ -11,6 +11,10 @@ on:
       - "planprobe/models.py"
   workflow_dispatch:
 
+concurrency:
+  group: planprobe-open-model-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   qwen-preflight:
     runs-on: ubuntu-latest
@@ -25,7 +29,9 @@ jobs:
         shell: bash
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
-          nohup ollama serve > /tmp/ollama.log 2>&1 &
+          if ! curl -fsS http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
+            nohup ollama serve > /tmp/ollama.log 2>&1 &
+          fi
           for i in {1..30}; do
             if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then
               break
@@ -41,14 +47,18 @@ jobs:
           mkdir -p artifacts
           ollama --version | tee artifacts/ollama-version.txt
           ollama list | tee artifacts/ollama-models.txt
+      - name: Warm Qwen model
+        run: ollama run qwen2.5-coder:1.5b "Reply with OK only." >/dev/null
       - name: Run real Qwen preflight
         shell: bash
         env:
           PLANPROBE_OPENAI_BASE_URL: http://127.0.0.1:11434/v1
           PLANPROBE_OPENAI_MODEL: qwen2.5-coder:1.5b
           PLANPROBE_OPENAI_API_KEY: ollama
-          PLANPROBE_LLM_TIMEOUT_SECONDS: "420"
-          PLANPROBE_LLM_MAX_TOKENS: "1200"
+          PLANPROBE_LLM_TIMEOUT_SECONDS: "300"
+          PLANPROBE_LLM_MAX_TOKENS: "800"
+          PLANPROBE_OPENAI_RESPONSE_FORMAT: json_schema
+          PLANPROBE_CONTEXT_ROOTS: synthetic_app/liveops_service
         run: |
           set +e
           python -m planprobe.cli preflight             --workspace .             --provider openai-compatible             --output artifacts/qwen-preflight.json
@@ -74,6 +84,7 @@ jobs:
               "output_tokens": p["metrics"]["llm_output_tokens"],
               "latency_ms": p["metrics"]["llm_latency_ms"],
               "validation_retries": p["metrics"]["llm_validation_retries"],
+              "schema_fallbacks": p["metrics"]["llm_schema_fallbacks"],
               "model": p["metrics"]["llm_model"],
           }, ensure_ascii=False))
           PY

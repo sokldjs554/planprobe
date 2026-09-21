@@ -47,3 +47,21 @@ def test_repository_context_supports_non_demo_workspace(tmp_path: Path, monkeypa
     assert "src/service.py" in packed
     assert "VALUE = 7" in packed
     assert "ignored.js" not in packed
+
+
+def test_untrusted_probe_failure_becomes_unknown(tmp_path: Path) -> None:
+    from planprobe.engine.probes import run_probe_fail_closed
+    from planprobe.models import ProbeSpec
+
+    spec = ProbeSpec(
+        id="PR-MISSING",
+        assumption_id="A-MISSING",
+        kind="field_shape",
+        target_path="missing.py",
+        params={"class": "Missing", "field": "value", "expected_shape": "scalar"},
+        rationale="Model-proposed missing paths must fail closed rather than crash the preflight.",
+    )
+    result = run_probe_fail_closed(tmp_path, spec)
+    assert result.verdict == "unknown"
+    assert result.evidence == []
+    assert "FileNotFoundError" in result.observed

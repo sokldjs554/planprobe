@@ -10,7 +10,7 @@ from typing import Literal
 from planprobe.agent.factory import build_provider
 from planprobe.engine.gate import decide_gate
 from planprobe.engine.patching import apply_patch
-from planprobe.engine.probes import run_probe
+from planprobe.engine.probes import run_probe_fail_closed
 from planprobe.engine.verification import run_checks
 from planprobe.engine.workspace import create_workspace
 from planprobe.models import (
@@ -52,7 +52,7 @@ class PlanProbePipeline:
             self._write(run_root / "probes.json", [probe.model_dump() for probe in probes])
 
             self._event(run_id, RunStage.PROBING, "코드를 쓰기 전에 저장소 증거로 전제를 반증하고 있습니다.")
-            results = [run_probe(workspace, probe) for probe in probes]
+            results = [run_probe_fail_closed(workspace, probe) for probe in probes]
             self._write(run_root / "probe-results.json", [result.model_dump() for result in results])
             gate = decide_gate(initial_plan, results)
             if gate.status == "block":

@@ -4,6 +4,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: planprobe-live-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deployed-e2e:
     runs-on: ubuntu-latest

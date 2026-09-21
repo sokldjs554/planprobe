@@ -29,12 +29,14 @@ class OpenAICompatibleProvider(AgentProvider):
         self.model = os.getenv("PLANPROBE_OPENAI_MODEL", "qwen2.5-coder:7b")
         self.api_key = os.getenv("PLANPROBE_OPENAI_API_KEY", "ollama")
         self.timeout = float(os.getenv("PLANPROBE_LLM_TIMEOUT_SECONDS", "90"))
-        self.max_tokens = int(os.getenv("PLANPROBE_LLM_MAX_TOKENS", "1600"))
+        self.max_tokens = int(os.getenv("PLANPROBE_LLM_MAX_TOKENS", "900"))
+        self.response_format = os.getenv("PLANPROBE_OPENAI_RESPONSE_FORMAT", "json_schema").strip().lower()
         self._calls = 0
         self._input_tokens = 0
         self._output_tokens = 0
         self._latency_ms = 0.0
         self._validation_retries = 0
+        self._schema_fallbacks = 0
 
     def metrics(self) -> dict[str, int | float | str]:
         return {
@@ -45,6 +47,7 @@ class OpenAICompatibleProvider(AgentProvider):
             "llm_model": self.model,
             "llm_route": self.name,
             "llm_validation_retries": self._validation_retries,
+            "llm_schema_fallbacks": self._schema_fallbacks,
         }
 
     def _json(self, system: str, user: str, model_type: type[T]) -> T:
@@ -65,11 +68,23 @@ class OpenAICompatibleProvider(AgentProvider):
         ]
         last_error: Exception | None = None
         for attempt in range(2):
+            if self.response_format == "json_schema":
+                response_format: dict[str, Any] = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": model_type.__name__.lower(),
+                        "schema": model_type.model_json_schema(),
+                        "strict": True,
+                    },
+                }
+            else:
+                response_format = {"type": "json_object"}
             payload = {
                 "model": self.model,
                 "temperature": 0,
+                "seed": 0,
                 "messages": messages,
-                "response_format": {"type": "json_object"},
+                "response_format": response_format,
                 "max_tokens": self.max_tokens,
             }
             started = time.perf_counter()
@@ -79,6 +94,14 @@ class OpenAICompatibleProvider(AgentProvider):
                     headers={"Authorization": f"Bearer {self.api_key}"},
                     json=payload,
                 )
+                if response.status_code in {400, 422} and self.response_format == "json_schema":
+                    self._schema_fallbacks += 1
+                    payload["response_format"] = {"type": "json_object"}
+                    response = client.post(
+                        f"{self.base_url}/chat/completions",
+                        headers={"Authorization": f"Bearer {self.api_key}"},
+                        json=payload,
+                    )
                 response.raise_for_status()
             elapsed = (time.perf_counter() - started) * 1000
             body = response.json()

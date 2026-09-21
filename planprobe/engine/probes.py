@@ -36,6 +36,24 @@ def run_probe(workspace: Path, spec: ProbeSpec) -> ProbeResult:
     )
 
 
+def run_probe_fail_closed(workspace: Path, spec: ProbeSpec) -> ProbeResult:
+    """Convert untrusted probe-spec execution errors into an evidence-safe unknown verdict."""
+
+    started = time.perf_counter()
+    try:
+        return run_probe(workspace, spec)
+    except Exception as exc:
+        return ProbeResult(
+            probe_id=spec.id,
+            assumption_id=spec.assumption_id,
+            verdict="unknown",
+            observed=f"probe execution failed: {type(exc).__name__}: {exc}",
+            expected="allowlisted probe executes successfully against the selected repository",
+            evidence=[],
+            duration_ms=round((time.perf_counter() - started) * 1000, 3),
+        )
+
+
 def _source(workspace: Path, rel: str) -> tuple[Path, str, list[str]]:
     path = (workspace / rel).resolve()
     if workspace.resolve() not in path.parents:

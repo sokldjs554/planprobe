@@ -5,7 +5,7 @@ from pathlib import Path
 
 from planprobe.agent.factory import build_provider
 from planprobe.engine.gate import decide_gate
-from planprobe.engine.probes import run_probe
+from planprobe.engine.probes import run_probe_fail_closed
 from planprobe.models import PreflightPacket
 
 
@@ -24,7 +24,7 @@ def run_preflight(
     provider = build_provider(provider_name)
     plan = provider.plan(request_text, root)
     probes = provider.compile_probes(plan, root)
-    results = [run_probe(root, probe) for probe in probes]
+    results = [run_probe_fail_closed(root, probe) for probe in probes]
     gate = decide_gate(plan, results)
 
     return PreflightPacket(
